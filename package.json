@@ -1,0 +1,27 @@
+{
+  "name": "img-magic",
+  "version": "1.0.0",
+  "description": "A powerful CLI tool for image manipulation using sharp",
+  "main": "index.js",
+  "bin": {
+    "img-magic": "./index.js"
+  },
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [
+    "image",
+    "cli",
+    "sharp",
+    "convert",
+    "resize",
+    "crop",
+    "optimize"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^11.1.0",
+    "sharp": "^0.33.5"
+  }
+}
