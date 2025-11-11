@@ -63,14 +63,15 @@ program
   .command('resize')
   .description('Resize images while maintaining aspect ratio')
   .argument('<files...>', 'image files or directories to resize')
-  .option('--w <width>', 'target width in pixels')
-  .option('--h <height>', 'target height in pixels')
+  .option('--w <width>', 'target width in pixels or keyword (half, quarter, third)')
+  .option('--h <height>', 'target height in pixels or keyword (half, quarter, third)')
   .option('--out <path>', 'output directory or file path')
   .addHelpText('after', `
 Examples:
   $ img-magic resize images/ --w 1200
   $ img-magic resize logo.png --h 500
   $ img-magic resize photo.jpg --w 800 --h 600
+  $ img-magic resize image.png --w half --h quarter
   `)
   .action(async (files, options) => {
     try {
@@ -106,18 +107,25 @@ program
   .command('crop')
   .description('Crop images to specific dimensions')
   .argument('<files...>', 'image files or directories to crop')
-  .requiredOption('--w <width>', 'crop width in pixels')
-  .requiredOption('--h <height>', 'crop height in pixels')
+  .option('--w <width>', 'crop width in pixels or keyword (half, quarter, third)')
+  .option('--h <height>', 'crop height in pixels or keyword (half, quarter, third)')
   .option('--pos <position>', 'anchor point for crop (center, top, bottom, left, right, top-left, top-right, bottom-left, bottom-right)', 'center')
   .option('--out <path>', 'output directory or file path')
   .addHelpText('after', `
 Examples:
   $ img-magic crop photos/ --w 800 --h 600 --pos top
-  $ img-magic crop banner.jpg --w 400 --h 400 --pos center
-  $ img-magic crop image.png --w 1200 --h 630 --pos top-left
+  $ img-magic crop banner.jpg --w 400 --pos center
+  $ img-magic crop image.png --w half --h quarter --pos top-left
+  $ img-magic crop photo.jpg --w third (height will maintain aspect ratio)
   `)
   .action(async (files, options) => {
     try {
+      // Validate at least one dimension is provided
+      if (!options.w && !options.h) {
+        console.error('Error: At least one of --w (width) or --h (height) must be specified');
+        process.exit(1);
+      }
+      
       // Find all images
       const images = findImages(files);
       if (images.length === 0) {

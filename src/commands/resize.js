@@ -1,6 +1,35 @@
 const sharp = require('sharp');
 
 /**
+ * Parse dimension value (can be number or keyword like "half", "quarter", "third")
+ * @param {string|number} value - Dimension value
+ * @param {number} originalSize - Original image dimension
+ * @returns {number|null} Parsed dimension or null
+ */
+function parseDimension(value, originalSize) {
+  if (!value) return null;
+  
+  const strValue = String(value).toLowerCase().trim();
+  
+  // Handle keyword values
+  switch (strValue) {
+    case 'half':
+      return Math.floor(originalSize / 2);
+    case 'quarter':
+      return Math.floor(originalSize / 4);
+    case 'third':
+      return Math.floor(originalSize / 3);
+    default:
+      // Try to parse as number
+      const num = parseInt(value, 10);
+      if (isNaN(num) || num <= 0) {
+        throw new Error(`Invalid dimension value: ${value}. Use a positive number or keywords: half, quarter, third`);
+      }
+      return num;
+  }
+}
+
+/**
  * Resize image with optional width and/or height
  * @param {string} inputPath - Path to input image
  * @param {string} outputPath - Path to output image
@@ -14,17 +43,15 @@ async function resizeImage(inputPath, outputPath, options) {
     throw new Error('At least one of --w (width) or --h (height) must be specified');
   }
   
-  // Parse dimensions to integers
-  const w = width ? parseInt(width, 10) : null;
-  const h = height ? parseInt(height, 10) : null;
+  // Get image metadata to determine original dimensions (needed for keywords)
+  const image = sharp(inputPath);
+  const metadata = await image.metadata();
+  const imgWidth = metadata.width;
+  const imgHeight = metadata.height;
   
-  // Validate dimensions
-  if (w !== null && (isNaN(w) || w <= 0)) {
-    throw new Error('Width must be a positive number');
-  }
-  if (h !== null && (isNaN(h) || h <= 0)) {
-    throw new Error('Height must be a positive number');
-  }
+  // Parse dimensions (can be numbers or keywords like "half", "quarter", "third")
+  const w = parseDimension(width, imgWidth);
+  const h = parseDimension(height, imgHeight);
   
   // Build sharp pipeline
   let pipeline = sharp(inputPath);
